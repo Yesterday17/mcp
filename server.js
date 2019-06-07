@@ -31,7 +31,7 @@ const server = minecraft.createServer({
 const sockets = new Map();
 
 server.on("login", client => {
-  client.registerChannel("shadowsocks", ["string", []]);
+  client.registerChannel("world", ["string", []]);
   client.write("login", {
     entityId: client.id,
     levelType: "default",
@@ -56,9 +56,9 @@ server.on("login", client => {
   };
   client.write("chat", { message: JSON.stringify(msg), position: 0 });
 
-  client.on("shadowsocks", data => {
+  client.on("world", data => {
     const d = JSON.parse(data);
-    if (d.data) d.data = Buffer.from(d.data.data);
+    if (d.data) d.data = Buffer.from(d.data, "base64");
     console.log(d);
     if (d.type === "s") {
       const s = new net.Socket();
@@ -67,17 +67,17 @@ server.on("login", client => {
       });
       s.on("data", data => {
         client.writeChannel(
-          "shadowsocks",
+          "world",
           JSON.stringify({
             id: d.id,
             type: "w",
-            data: data.toJSON()
+            data: data.toString("base64")
           })
         );
       });
       s.on("end", () => {
         client.writeChannel(
-          "shadowsocks",
+          "world",
           JSON.stringify({
             id: d.id,
             type: "e"

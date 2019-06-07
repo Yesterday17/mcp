@@ -10,7 +10,7 @@ const client = minecraft.createClient({
   version: "1.12.2"
 });
 
-client.registerChannel("shadowsocks", ["string", []]);
+client.registerChannel("world", ["string", []]);
 
 client.on("chat", function(packet) {
   var jsonMsg = JSON.parse(packet.message);
@@ -22,11 +22,11 @@ client.on("chat", function(packet) {
       sockets.set(id, local);
       local.on("data", data => {
         client.writeChannel(
-          "shadowsocks",
+          "world",
           JSON.stringify({
             id: id,
             type: written ? "w" : "s",
-            data: data.toJSON()
+            data: data.toString("base64")
           })
         );
         written = true;
@@ -37,9 +37,9 @@ client.on("chat", function(packet) {
   }
 });
 
-client.on("shadowsocks", data => {
+client.on("world", data => {
   const d = JSON.parse(data);
-  if (d.data) d.data = Buffer.from(d.data.data);
+  if (d.data) d.data = Buffer.from(d.data, "base64");
 
   console.log(d);
   if (d.type === "w") {
