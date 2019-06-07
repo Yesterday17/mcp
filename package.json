@@ -1,7 +1,6 @@
 {
   "name": "mcp",
   "version": "1.0.0",
-  "main": "index.js",
   "repository": "git@github.com:Yesterday17/mcp.git",
   "author": "Yesterday17 <t@yesterday17.cn>",
   "license": "MIT",
@@ -12,7 +11,7 @@
   "scripts": {
     "server": "set DEBUG=n-minecraft-protocol && node server.js",
     "debug:server": "set DEBUG=minecraft-protocol && node server.js",
-    "client": "set DEBUG=n-minecraft-protocol && node index.js",
-    "debug:client": "set DEBUG=minecraft-protocol && node index.js"
+    "client": "set DEBUG=n-minecraft-protocol && node client.js",
+    "debug:client": "set DEBUG=minecraft-protocol && node client.js"
   }
 }
