@@ -3,18 +3,23 @@ const minecraft = require("minecraft-protocol");
 const { readFileSync } = require("fs");
 const fake = require("./fakemap");
 
-const { username, password = "", port: clientPort = 1080 } = JSON.parse(
-  readFileSync("./config.client.json", { encoding: "utf-8" })
-);
+const {
+  host,
+  port: clientPort = 1080,
+  username,
+  password,
+  version = "1.12.2"
+} = JSON.parse(readFileSync("./config.client.json", { encoding: "utf-8" }));
 
 let req = 0;
 
 const sockets = new Map();
 
 const client = minecraft.createClient({
+  host,
   username,
   password,
-  version: "1.12.2"
+  version
 });
 
 for (let entry of fake.entries()) {

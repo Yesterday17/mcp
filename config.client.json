@@ -1,5 +1,6 @@
 {
-  "username": "Yesterday17",
-  "password": "",
-  "port": 1080
+  "host": "",
+  "port": 1080,
+  "username": "",
+  "password": ""
 }
