@@ -1,5 +1,5 @@
 {
-  "socksPort": 1080,
+  "socksPort": 60000,
   "motd": "Welcome to Yesterday17's void world!",
   "maxPlayers": 10,
   "msgSender": "某昨P",
