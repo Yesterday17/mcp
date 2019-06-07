@@ -14,7 +14,7 @@ const {
   msgContent = "Hello World!"
 } = JSON.parse(readFileSync("./config.server.json", { encoding: "utf-8" }));
 
-const sockets = new Map();
+const users = new Map();
 
 function createSocksServer() {
   const srv = socks.createServer(function(info, accept, deny) {
@@ -41,6 +41,8 @@ const server = minecraft.createServer({
 });
 
 server.on("login", client => {
+  const sockets = new Map();
+  users.set(client.username, sockets);
   for (let entry of fake.entries()) {
     client.registerChannel(entry[1], [
       "container",

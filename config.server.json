@@ -3,5 +3,6 @@
   "motd": "Welcome to Yesterday17's void world!",
   "maxPlayers": 10,
   "msgSender": "某昨P",
-  "msgContent": "欢迎！请自行寻找游戏方式（逃）"
+  "msgContent": "欢迎！请自行寻找游戏方式（逃）",
+  "online": true
 }
