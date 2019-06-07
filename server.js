@@ -46,7 +46,7 @@ server.on("login", client => {
   for (let entry of fake.entries()) {
     client.registerChannel(entry[1], [
       "container",
-      [{ name: "id", type: "i8" }, { name: "data", type: "string" }]
+      [{ name: "id", type: "i64" }, { name: "data", type: "string" }]
     ]);
   }
 
@@ -108,4 +108,8 @@ server.on("login", client => {
   client.on(fake.get("on-error"), ({ id, data }) => {
     //TODO:
   });
+});
+
+server.on("error", error => {
+  console.error(error);
 });

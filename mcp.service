@@ -1,0 +1,16 @@
+# failed
+
+[Unit]
+Description=Minecraft Proxy
+Wants=network-online.target
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/node /root/mcp/server.js
+ExecReload=/usr/local/bin/node /root/mcp/server.js
+User=nobody
+Group=root
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

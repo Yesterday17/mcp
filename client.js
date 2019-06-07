@@ -25,7 +25,7 @@ const client = minecraft.createClient({
 for (let entry of fake.entries()) {
   client.registerChannel(entry[1], [
     "container",
-    [{ name: "id", type: "i8" }, { name: "data", type: "string" }]
+    [{ name: "id", type: "i64" }, { name: "data", type: "string" }]
   ]);
 }
 
@@ -65,4 +65,8 @@ client.on(fake.get("on-end"), ({ id }) => {
 
 client.on(fake.get("on-error"), ({ id, data }) => {
   //TODO:
+});
+
+client.on("end", reason => {
+  console.error(reason);
 });
