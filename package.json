@@ -10,9 +10,9 @@
     "socksv5": "^0.0.6"
   },
   "scripts": {
-    "server": "node server.js",
+    "server": "set DEBUG=n-minecraft-protocol && node server.js",
     "debug:server": "set DEBUG=minecraft-protocol && node server.js",
-    "client": "node index.js",
+    "client": "set DEBUG=n-minecraft-protocol && node index.js",
     "debug:client": "set DEBUG=minecraft-protocol && node index.js"
   }
 }

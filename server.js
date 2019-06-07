@@ -2,6 +2,7 @@ const net = require("net");
 const minecraft = require("minecraft-protocol");
 const socks = require("socksv5");
 
+const fake = require("./fakemap");
 const LOCAL_SOCKS5_PORT = 1080; // 60000;
 
 function createSocksServer() {
@@ -31,7 +32,13 @@ const server = minecraft.createServer({
 const sockets = new Map();
 
 server.on("login", client => {
-  client.registerChannel("world", ["string", []]);
+  for (let entry of fake.entries()) {
+    client.registerChannel(entry[1], [
+      "container",
+      [{ name: "id", type: "i8" }, { name: "data", type: "string" }]
+    ]);
+  }
+
   client.write("login", {
     entityId: client.id,
     levelType: "default",
@@ -56,39 +63,38 @@ server.on("login", client => {
   };
   client.write("chat", { message: JSON.stringify(msg), position: 0 });
 
-  client.on("world", data => {
-    const d = JSON.parse(data);
-    if (d.data) d.data = Buffer.from(d.data, "base64");
-    console.log(d);
-    if (d.type === "s") {
-      const s = new net.Socket();
-      s.connect(LOCAL_SOCKS5_PORT, () => {
-        s.write(d.data);
+  client.on(fake.get("on-connection"), ({ id, data }) => {
+    const socket = new net.Socket();
+    socket.connect(LOCAL_SOCKS5_PORT, () => {
+      socket.write(Buffer.from(data, "base64"));
+    });
+
+    socket.on("data", data => {
+      client.writeChannel(fake.get("on-data"), {
+        id,
+        data: data.toString("base64")
       });
-      s.on("data", data => {
-        client.writeChannel(
-          "world",
-          JSON.stringify({
-            id: d.id,
-            type: "w",
-            data: data.toString("base64")
-          })
-        );
-      });
-      s.on("end", () => {
-        client.writeChannel(
-          "world",
-          JSON.stringify({
-            id: d.id,
-            type: "e"
-          })
-        );
-        sockets.delete(d.id);
-      });
-      s.on("error", () => {});
-      sockets.set(d.id, s);
-    } else if (d.type === "w") {
-      sockets.get(d.id).write(d.data);
-    }
+    });
+
+    socket.on("end", () => {
+      client.writeChannel(fake.get("on-end"), { id, data: "" });
+      sockets.delete(id);
+    });
+
+    socket.on("error", () => {});
+
+    sockets.set(id, socket);
+  });
+
+  client.on(fake.get("on-data"), ({ id, data }) => {
+    sockets.get(id).write(Buffer.from(data, "base64"));
+  });
+
+  client.on(fake.get("on-end"), ({ id, data }) => {
+    //NOT NEEDED
+  });
+
+  client.on(fake.get("on-error"), ({ id, data }) => {
+    //TODO:
   });
 });

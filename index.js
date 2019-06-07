@@ -1,51 +1,62 @@
 const net = require("net");
 const minecraft = require("minecraft-protocol");
 
+const config = {
+  username: "Yesterday17",
+  port: 11451
+};
+
+const fake = require("./fakemap");
 let req = 0;
 
 const sockets = new Map();
 
 const client = minecraft.createClient({
-  username: "Yesterday17",
+  username: config.username,
   version: "1.12.2"
 });
 
-client.registerChannel("world", ["string", []]);
+for (let entry of fake.entries()) {
+  client.registerChannel(entry[1], [
+    "container",
+    [{ name: "id", type: "i8" }, { name: "data", type: "string" }]
+  ]);
+}
 
 client.on("chat", function(packet) {
-  var jsonMsg = JSON.parse(packet.message);
-  if (jsonMsg.translate == "chat.type.announcement") {
-    const netClient = net.createServer();
-    netClient.on("connection", local => {
+  if (JSON.parse(packet.message).translate == "chat.type.announcement") {
+    // 连接成功，收到了系统的欢迎消息
+    const localListener = net.createServer();
+    localListener.on("connection", local => {
       let id = req++,
         written = false;
       sockets.set(id, local);
       local.on("data", data => {
         client.writeChannel(
-          "world",
-          JSON.stringify({
-            id: id,
-            type: written ? "w" : "s",
-            data: data.toString("base64")
-          })
+          !written ? fake.get("on-connection") : fake.get("on-data"),
+          { id, data: data.toString("base64") }
         );
         written = true;
       });
       local.on("error", () => {});
     });
-    netClient.listen(11451);
+    localListener.listen(config.port);
   }
 });
 
-client.on("world", data => {
-  const d = JSON.parse(data);
-  if (d.data) d.data = Buffer.from(d.data, "base64");
+client.on(fake.get("on-connection"), ({ id, data }) => {
+  // NOT NEEDED
+});
 
-  console.log(d);
-  if (d.type === "w") {
-    sockets.get(d.id).write(d.data);
-  } else if (d.type === "e") {
-    sockets.get(d.id).end();
-    sockets.delete(d.id);
-  }
+client.on(fake.get("on-data"), ({ id, data }) => {
+  sockets.get(id).write(Buffer.from(data, "base64"));
+});
+
+client.on(fake.get("on-end"), ({ id }) => {
+  sockets.get(id).end();
+  sockets.delete(id);
+});
+
+client.on(fake.get("on-error"), ({ id, data }) => {
+  //TODO:
 });
