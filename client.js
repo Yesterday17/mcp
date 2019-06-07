@@ -1,18 +1,19 @@
 const net = require("net");
 const minecraft = require("minecraft-protocol");
-
-const config = {
-  username: "Yesterday17",
-  port: 11451
-};
-
+const { readFileSync } = require("fs");
 const fake = require("./fakemap");
+
+const { username, password = "", port: clientPort = 1080 } = JSON.parse(
+  readFileSync("./config.client.json", { encoding: "utf-8" })
+);
+
 let req = 0;
 
 const sockets = new Map();
 
 const client = minecraft.createClient({
-  username: config.username,
+  username,
+  password,
   version: "1.12.2"
 });
 
@@ -40,7 +41,7 @@ client.on("chat", function(packet) {
       });
       local.on("error", () => {});
     });
-    localListener.listen(config.port);
+    localListener.listen(clientPort);
   }
 });
 

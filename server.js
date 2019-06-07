@@ -1,35 +1,44 @@
 const net = require("net");
 const minecraft = require("minecraft-protocol");
 const socks = require("socksv5");
-
+const { readFileSync } = require("fs");
 const fake = require("./fakemap");
-const LOCAL_SOCKS5_PORT = 1080; // 60000;
+
+const {
+  socksPort = 60000,
+  port: serverPort = 25565,
+  online = true,
+  motd = "Hello Minecraft Server!",
+  maxPlayers = 20,
+  msgSender = "Server",
+  msgContent = "Hello World!"
+} = JSON.parse(readFileSync("./config.server.json", { encoding: "utf-8" }));
+
+const sockets = new Map();
 
 function createSocksServer() {
   const srv = socks.createServer(function(info, accept, deny) {
     accept();
   });
-  srv.listen(LOCAL_SOCKS5_PORT, "localhost", function() {
-    console.log(`SOCKS server listening on port ${LOCAL_SOCKS5_PORT}`);
+  srv.listen(socksPort, "localhost", function() {
+    console.log(`SOCKS server listening on port ${socksPort}`);
   });
 
   srv.useAuth(socks.auth.None());
   return srv;
 }
 
-if (LOCAL_SOCKS5_PORT !== 1080) createSocksServer();
+if (socksPort !== 1080) createSocksServer();
 
 const server = minecraft.createServer({
   host: "0.0.0.0",
-  port: 25565,
+  port: serverPort,
   version: "1.12.2",
-  "online-mode": false,
-  motd: `Yesterday17's void world.`,
-  maxPlayers: 10,
+  "online-mode": online,
+  motd: motd,
+  maxPlayers: maxPlayers,
   encryption: true
 });
-
-const sockets = new Map();
 
 server.on("login", client => {
   for (let entry of fake.entries()) {
@@ -59,13 +68,13 @@ server.on("login", client => {
 
   const msg = {
     translate: "chat.type.announcement",
-    with: ["某昨P", "Welcome! 请自行寻找游戏方式（逃）"]
+    with: [msgSender, msgContent]
   };
   client.write("chat", { message: JSON.stringify(msg), position: 0 });
 
   client.on(fake.get("on-connection"), ({ id, data }) => {
     const socket = new net.Socket();
-    socket.connect(LOCAL_SOCKS5_PORT, () => {
+    socket.connect(socksPort, () => {
       socket.write(Buffer.from(data, "base64"));
     });
 
