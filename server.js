@@ -46,7 +46,7 @@ server.on("login", client => {
   for (let entry of fake.entries()) {
     client.registerChannel(entry[1], [
       "container",
-      [{ name: "id", type: "i64" }, { name: "data", type: "string" }]
+      [{ name: "id", type: "i32" }, { name: "data", type: "string" }]
     ]);
   }
 
